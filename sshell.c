@@ -47,8 +47,8 @@ int main(void)
                         char* buf = getcwd(NULL, 0);
                         int ret = 0;
                         if (buf == NULL) ret = 1;
-                        printf("%s\n", buf);
-                        fprintf(stderr, "+ completed 'pwd' [%d]\n", ret);
+                        fprintf(stderr, "%s\n", buf);
+                        printf("+ completed 'pwd' [%d]\n", ret);
                         continue;
                 }
                 
