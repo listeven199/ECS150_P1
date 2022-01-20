@@ -69,7 +69,7 @@ int main(void)
                 argList[argc-1] = NULL;
 
                 if (!strcmp(cmd, "cd")) {
-                      int ret = chdir(argList[1]);\
+                      int ret = chdir(argList[1]);
                       printf("+ completed '%s' [%d]\n", command, ret);
                       continue;
                 }
