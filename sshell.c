@@ -41,7 +41,7 @@ int main(void)
                 }
                 if (!strcmp(cmd, "exit")) {
                         fprintf(stderr, "Bye...\n");
-                        printf("+ completed 'exit' [0]\n);
+                        printf("+ completed 'exit' [0]\n");
                         break;
                 }
                 if (!strcmp(cmd, "pwd")) {
