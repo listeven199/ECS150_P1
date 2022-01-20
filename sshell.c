@@ -20,7 +20,6 @@ int main(void)
                 /* Get command line */
                 fgets(cmd, CMDLINE_MAX, stdin);
                 
-
                 /* Print command line if stdin is not provided by terminal */
                 if (!isatty(STDIN_FILENO)) {
                         printf("%s", cmd);
@@ -41,7 +40,7 @@ int main(void)
                 }
                 if (!strcmp(cmd, "exit")) {
                         fprintf(stderr, "Bye...\n");
-                        printf("+ completed 'exit' [0]\n");
+                        fprintf(stderr, "+ completed 'exit' [0]\n");
                         break;
                 }
                 if (!strcmp(cmd, "pwd")) {
@@ -72,7 +71,7 @@ int main(void)
                 pid = fork();
                 if (pid == 0) {
                         execvp(cmd, argList);
-                        perror("execvp");
+                        perror("Error");
                         exit(1);
                 } else if (pid > 0) {
                         int status;
