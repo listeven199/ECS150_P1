@@ -70,7 +70,10 @@ int main(void)
 
                 if (!strcmp(cmd, "cd")) {
                       int ret = chdir(argList[1]);
-                      fprintf(stderr, "+ completed '%s' [%d]\n", command, ret);
+                      if (ret != 0) {
+                        printf("Error: cannot cd into directory\n");
+                      }
+                      fprintf(stderr, "+ completed '%s' [%d]\n", command, abs(ret));
                       continue;
                 }
 
