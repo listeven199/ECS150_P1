@@ -39,7 +39,7 @@ int main(void)
                         continue;
                 }
                 if (!strcmp(cmd, "exit")) {
-                        fprintf(stderr, "Bye...\n");
+                        printf("Bye...\n");
                         fprintf(stderr, "+ completed 'exit' [0]\n");
                         break;
                 }
@@ -47,7 +47,7 @@ int main(void)
                         char* buf = getcwd(NULL, 0);
                         int ret = 0;
                         if (buf == NULL) ret = 1;
-                        fprintf(stderr, "%s\n", buf);
+                        printf("%s\n", buf);
                         fprintf(stderr, "+ completed 'pwd' [%d]\n", ret);
                         continue;
                 }
@@ -83,7 +83,7 @@ int main(void)
                 } else if (pid > 0) {
                         int status;
                         waitpid(pid, &status, 0);
-                        printf("+ completed '%s' [%d]\n", command, WEXITSTATUS(status));
+                        fprintf(stderr, "+ completed '%s' [%d]\n", command, WEXITSTATUS(status));
                 } else {
                         perror("fork");
                         exit(1);
