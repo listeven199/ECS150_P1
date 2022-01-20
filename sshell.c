@@ -39,7 +39,7 @@ int main(void)
                         continue;
                 }
                 if (!strcmp(cmd, "exit")) {
-                        fprintf(strerr, "Bye...\n");
+                        fprintf(stderr, "Bye...\n");
                         fprintf(stderr, "+ completed 'exit' [0]\n");
                         break;
                 }
