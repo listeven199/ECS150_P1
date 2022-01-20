@@ -48,7 +48,7 @@ int main(void)
                         int ret = 0;
                         if (buf == NULL) ret = 1;
                         printf("%s\n", buf);
-                        printf("+ completed 'pwd' [%d]\n", ret);
+                        fprintf(stderr, "+ completed 'pwd' [%d]\n", ret);
                         continue;
                 }
                 
