@@ -47,8 +47,8 @@ int main(void)
                         char* buf = getcwd(NULL, 0);
                         int ret = 0;
                         if (buf == NULL) ret = 1;
-                        fprintf(stderr, "%s\n", buf);
-                        printf("+ completed 'pwd' [%d]\n", ret);
+                        printf("%s\n", buf);
+                        fprintf(stderr, "+ completed 'pwd' [%d]\n", ret);
                         continue;
                 }
                 
@@ -70,7 +70,7 @@ int main(void)
 
                 if (!strcmp(cmd, "cd")) {
                       int ret = chdir(argList[1]);
-                      printf("+ completed '%s' [%d]\n", command, ret);
+                      fprintf(stderr, "+ completed '%s' [%d]\n", command, ret);
                       continue;
                 }
 
