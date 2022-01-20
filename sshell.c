@@ -51,6 +51,7 @@ int main(void)
                         printf("+ completed 'pwd' [%d]\n", ret);
                         continue;
                 }
+                
 
                 /* Regular Commands */
                 char* arguments[16];
@@ -66,6 +67,12 @@ int main(void)
                         argList[i] = arguments[i];
                 }
                 argList[argc-1] = NULL;
+
+                if (!strcmp(cmd, "cd")) {
+                      int ret = chdir(argList[1]);\
+                      printf("+ completed '%s' [%d]\n", command, ret);
+                      continue;
+                }
 
                 pid_t pid;
                 pid = fork();
