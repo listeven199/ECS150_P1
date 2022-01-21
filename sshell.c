@@ -122,6 +122,15 @@ int main(void) {
 			}
 			argList[argc-1] = NULL;
 			
+			if (!strcmp(cmd, "cd")) {
+				int ret = chdir(argList[1]);
+				if (ret != 0) {
+					printf("Error: cannot cd into directory\n");
+				}
+				fprintf(stderr, "+ completed '%s' [%d]\n", command, abs(ret));
+				continue;
+                        }
+			
 			pid_t pid;
 			pid = fork();
 
