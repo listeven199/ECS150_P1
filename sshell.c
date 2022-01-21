@@ -4,95 +4,139 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <fcntl.h>
+#include <stdbool.h>
 
 #define CMDLINE_MAX 512
+#define COPYMODE    0644
 
-int main(void)
-{
-        char cmd[CMDLINE_MAX];
-        while (1) {
-                char *nl;
+int main(void) {
+	char cmd[CMDLINE_MAX];
+	while (1) {
+		char *nl;
 
-                /* Print prompt */
-                printf("sshell$ ");
-                fflush(stdout);
+		/* Print prompt */
+		printf("sshell$ ");
+		fflush(stdout);
 
-                /* Get command line */
-                fgets(cmd, CMDLINE_MAX, stdin);
-                
-                /* Print command line if stdin is not provided by terminal */
-                if (!isatty(STDIN_FILENO)) {
-                        printf("%s", cmd);
-                        fflush(stdout);
-                }
+		/* Get command line */
+		fgets(cmd, CMDLINE_MAX, stdin);
 
-                /* Remove trailing newline from command line */
-                nl = strchr(cmd, '\n');
-                if (nl)
-                        *nl = '\0';
-                
-                char command[CMDLINE_MAX];
-                strcpy(command, cmd);
-                
-                /* Built-in Commands */
-                if (!strcmp(cmd, "")) {
-                        continue;
-                }
-                if (!strcmp(cmd, "exit")) {
-                        fprintf(stderr, "Bye...\n");
-                        fprintf(stderr, "+ completed 'exit' [0]\n");
-                        break;
-                }
-                if (!strcmp(cmd, "pwd")) {
-                        char* buf = getcwd(NULL, 0);
-                        int ret = 0;
-                        if (buf == NULL) ret = 1;
-                        printf("%s\n", buf);
-                        fprintf(stderr, "+ completed 'pwd' [%d]\n", ret);
-                        continue;
-                }
-                
+		/* Print command line if stdin is not provided by terminal */
+		if (!isatty(STDIN_FILENO)) {
+			printf("%s", cmd);
+			fflush(stdout);
+		}
 
-                /* Regular Commands */
-                char* arguments[16];
-                char* token= strtok(cmd, " ");
-                int argc = 0;
-                while (token != NULL) {
-                        arguments[argc++] = token;
-                        token = strtok(NULL, " ");
-                }
-                argc++;       
-                char* argList[argc];
-                for (int i = 0; i < argc-1; i++) {
-                        argList[i] = arguments[i];
-                }
-                argList[argc-1] = NULL;
+		/* Remove trailing newline from command line */
+		nl = strchr(cmd, '\n');
+		if (nl) {
+			*nl = '\0';
+		}
 
-                if (!strcmp(cmd, "cd")) {
-                      int ret = chdir(argList[1]);
-                      if (ret != 0) {
-                        printf("Error: cannot cd into directory\n");
-                      }
-                      fprintf(stderr, "+ completed '%s' [%d]\n", command, abs(ret));
-                      continue;
-                }
+		char command[CMDLINE_MAX];
+		strcpy(command, cmd);
+		
+		/* Built-in Commands */
+		if (!strcmp(cmd, "")) {
+			continue;
+		}
 
-                pid_t pid;
-                pid = fork();
-                if (pid == 0) {
-                        execvp(cmd, argList);
-                        perror("Error");
-                        exit(1);
-                } else if (pid > 0) {
-                        int status;
-                        waitpid(pid, &status, 0);
-                        fprintf(stderr, "+ completed '%s' [%d]\n", command, WEXITSTATUS(status));
-                } else {
-                        perror("fork");
-                        exit(1);
-                }
+		if (!strcmp(cmd, "exit")) {
+			fprintf(stderr, "Bye...\n");
+			fprintf(stderr, "+ completed 'exit' [0]\n");
+			break;
+		}
 
-        }
+		if (!strcmp(cmd, "pwd")) {
+			char* buf = getcwd(NULL, 0);
+			int ret = 0;
+			if (buf == NULL) ret = 1;
+			printf("%s\n", buf);
+			fprintf(stderr, "+ completed 'pwd' [%d]\n", ret);
+			continue;
+		}
 
-        return EXIT_SUCCESS;
+		/* Regular Commands */
+		int i;
+		bool redirect = false;
+		char outFileName[64];
+		char cmdWithoutRedirect[CMDLINE_MAX];
+		for (i = 0; cmd[i] != '\0'; i++) {
+			if (cmd[i] == '>') {
+				strcpy(outFileName, &cmd[i + 1]);
+				cmd[i] = '\0';
+				strcpy(cmdWithoutRedirect, cmd);
+				redirect = true;
+			}
+		}
+		if (redirect) {
+			char* arguments[16];
+			char* token= strtok(cmdWithoutRedirect, " ");
+			int argc = 0;
+			while (token != NULL) {
+				arguments[argc++] = token;
+				token = strtok(NULL, " ");
+			}
+			argc++;
+			char* argList[argc];
+			for (int i = 0; i < argc - 1; i++) {
+				argList[i] = arguments[i];
+			}
+			argList[argc-1] = NULL;
+
+			pid_t pid;
+			pid = fork();
+
+			if (pid == 0) {
+				int fd1;
+				if ((fd1 = creat(outFileName, 0644)) < 0) {
+					perror("Couldn't open the file");
+					exit(0);
+				}
+				dup2(fd1, STDOUT_FILENO);
+				close(fd1);
+				execvp(argList[0], argList);
+				perror("Error");
+				exit(1);
+			} else if (pid > 0) {
+				int status;
+				waitpid(pid, &status, 0);
+				fprintf(stderr, "+ completed '%s' [%d]\n", cmd, WEXITSTATUS(status));
+			} else {
+				perror("fork");
+				exit(1);
+			}
+		} else {
+			char* arguments[16];
+			char* token= strtok(cmd, " ");
+			int argc = 0;
+			while (token != NULL) {
+				arguments[argc++] = token;
+				token = strtok(NULL, " ");
+			}
+			argc++;       
+			char* argList[argc];
+			for (int i = 0; i < argc-1; i++) {
+				argList[i] = arguments[i];
+			}
+			argList[argc-1] = NULL;
+			
+			pid_t pid;
+			pid = fork();
+
+			if (pid == 0) {
+				execvp(cmd, argList);
+				perror("Error");
+				exit(1);
+			} else if (pid > 0) {
+				int status;
+				waitpid(pid, &status, 0);
+				fprintf(stderr, "+ completed '%s' [%d]\n", cmd, WEXITSTATUS(status));
+			} else {
+				perror("fork");
+				exit(1);
+			}
+		}
+	}
 }
